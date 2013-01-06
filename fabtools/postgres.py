@@ -6,8 +6,11 @@ This module provides tools for creating PostgreSQL users and databases.
 
 """
 from __future__ import with_statement
+from uuid import uuid4
 
-from fabric.api import *
+from fabric.api import *  # NOQA
+from fabric.operations import get, put
+from fabric.contrib import files
 
 
 def _run_as_pg(command):
@@ -66,3 +69,22 @@ def create_database(name, owner, template='template0', encoding='UTF8', locale='
     """
     _run_as_pg('''createdb --owner %(owner)s --template %(template)s --encoding=%(encoding)s\
  --lc-ctype=%(locale)s --lc-collate=%(locale)s %(name)s''' % locals())
+
+
+def dump_database(name, owner, output='dump.sql'):
+    tmpname = uuid4()
+    run('''pg_dump -w -h localhost -U %(owner)s --format plain --no-owner --no-acl --file "/tmp/%(tmpname)s" %(name)s''' % locals())
+    get('/tmp/%s' % tmpname, output)
+
+
+def import_database(source='dump.sql'):
+    tmpname = uuid4()
+    put(source, '/tmp/%s' % tmpname)
+
+
+def set_passwordfile(username, password, database, host='localhost', port='5432'):
+    files.append(
+        '/home/`whoami`/.pgpass',
+        '%(host)s:%(port)s:%(database)s:%(username)s:%(password)s' % locals()
+    )
+    run('chmod 0600 /home/`whoami`/.pgpass')
