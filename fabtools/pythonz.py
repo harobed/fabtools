@@ -23,7 +23,7 @@ def install(version='2.7.3'):
     fabtools.require.deb.packages([
         'libbz2-dev', 'build-essential', 'devscripts', 'libncurses5-dev',
         'libsqlite3-dev', 'libdb4.6-dev', 'libgdbm-dev',
-        'libreadline5-dev', 'zlib1g-dev', 'curl'
+        'libreadline5-dev', 'zlib1g-dev', 'curl', 'libssl-dev'
     ])
 
     if not is_pythonz_installed():
